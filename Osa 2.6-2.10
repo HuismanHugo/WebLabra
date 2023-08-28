@@ -14,6 +14,7 @@ const PersonForm = ({ newName, newNumber, handleNameChange, handleNumberChange, 
       <div>
         nimi: <input value={newName} onChange={handleNameChange} />
       </div>
+      <br></br>
       <div>
         numero: <input value={newNumber} onChange={handleNumberChange} />
       </div>
@@ -103,3 +104,4 @@ const App = () => {
 };
 
 export default App;
+

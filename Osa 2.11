@@ -1,0 +1,117 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const App = () => {
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [searchName, setSearchName] = useState('');
+
+  useEffect(() => {
+    console.log('effect');
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('promise fulfilled');
+        setPersons(response.data);
+      });
+  }, []);
+
+  const addPerson = (event) => {
+    event.preventDefault();
+    const isNameAlreadyInList = persons.some(
+      (person) => person.name.toLowerCase() === newName.toLowerCase()
+    );
+
+    if (isNameAlreadyInList) {
+      alert('Nimi on jo puhelinluettelossa.');
+    } else {
+      const newPerson = { name: newName, number: newNumber, id: persons.length + 1 };
+      setPersons([...persons, newPerson]);
+      setNewName('');
+      setNewNumber('');
+    }
+  };
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value);
+  };
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchName(event.target.value);
+  };
+
+  const filteredPersons = searchName
+    ? persons.filter((person) =>
+        person.name.toLowerCase().includes(searchName.toLowerCase())
+      )
+    : persons;
+
+  return (
+    <div>
+      <h2>Puhelinluettelo</h2>
+
+      <div>
+        Etsi: <input value={searchName} onChange={handleSearchChange} />
+      </div>
+
+      <h3>Lisää uusi</h3>
+
+      <form onSubmit={addPerson}>
+        <div>
+          nimi: <input value={newName} onChange={handleNameChange} />
+        </div>
+        <br />
+        <div>
+          numero: <input value={newNumber} onChange={handleNumberChange} />
+        </div>
+        <div>
+          <button type="submit">Lisää</button>
+        </div>
+      </form>
+
+      <h3>Numerot</h3>
+
+      <ul>
+        {filteredPersons.map((person) => (
+          <li key={person.id}>
+            {person.name} - {person.number}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default App;
+____________________________________________________________________________________________
+db.json
+
+{
+    "persons":[
+      { 
+        "name": "Arto Hellas", 
+        "number": "040-123456",
+        "id": 1
+      },
+      { 
+        "name": "Ada Lovelace", 
+        "number": "39-44-5323523",
+        "id": 2
+      },
+      { 
+        "name": "Dan Abramov", 
+        "number": "12-43-234345",
+        "id": 3
+      },
+      { 
+        "name": "Mary Poppendieck", 
+        "number": "39-23-6423122",
+        "id": 4
+      }
+    ]
+  }

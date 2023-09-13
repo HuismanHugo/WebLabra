@@ -1,0 +1,164 @@
+App.js
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const App = () => {
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [searchName, setSearchName] = useState('');
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then((response) => {
+        setPersons(response.data);
+      });
+  }, []);
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value);
+  };
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchName(event.target.value);
+  };
+
+  const addPerson = (event) => {
+    event.preventDefault();
+    const existingPerson = persons.find(
+      (person) => person.name.toLowerCase() === newName.toLowerCase()
+    );
+
+    if (existingPerson) {
+      const confirmUpdate = window.confirm(
+        `${newName} on jo luettelossa, haluatko päivittää numeron?`
+      );
+
+      if (confirmUpdate) {
+        const updatedPerson = { ...existingPerson, number: newNumber };
+
+        axios
+          .put(`http://localhost:3001/persons/${existingPerson.id}`, updatedPerson)
+          .then((response) => {
+            setPersons(
+              persons.map((person) =>
+                person.id === existingPerson.id ? response.data : person
+              )
+            );
+            setNewName('');
+            setNewNumber('');
+          })
+          .catch((error) => {
+            console.error('Error updating the person:', error);
+          });
+      }
+    } else {
+      const newPerson = { name: newName, number: newNumber };
+
+      axios
+        .post('http://localhost:3001/persons', newPerson)
+        .then((response) => {
+          setPersons([...persons, response.data]);
+          setNewName('');
+          setNewNumber('');
+        })
+        .catch((error) => {
+          console.error('Error adding a new person:', error);
+        });
+    }
+  };
+
+  const handleDelete = (id) => {
+    const personToDelete = persons.find((person) => person.id === id);
+
+    if (personToDelete) {
+      const confirmDelete = window.confirm(`Haluatko varmasti poistaa henkilön ${personToDelete.name}?`);
+
+      if (confirmDelete) {
+        axios
+          .delete(`http://localhost:3001/persons/${id}`)
+          .then(() => {
+            setPersons(persons.filter((person) => person.id !== id));
+          })
+          .catch(error => {
+            console.error('Error deleting the person:', error);
+          });
+      }
+    }
+  };
+
+  const filteredPersons = searchName
+    ? persons.filter((person) =>
+        person.name.toLowerCase().includes(searchName.toLowerCase())
+      )
+    : persons;
+
+  return (
+    <div>
+      <h2>Puhelinluettelo</h2>
+
+      <div>
+        Etsi: <input value={searchName} onChange={handleSearchChange} />
+      </div>
+
+      <h3>Lisää uusi</h3>
+
+      <form onSubmit={addPerson}>
+        <div>
+          nimi: <input value={newName} onChange={handleNameChange} />
+        </div>
+        <br />
+        <div>
+          numero: <input value={newNumber} onChange={handleNumberChange} />
+        </div>
+        <div>
+          <button type="submit">Lisää</button>
+        </div>
+      </form>
+
+      <h3>Numerot</h3>
+
+      <ul>
+        {filteredPersons.map((person) => (
+          <li key={person.id}>
+            {person.name} - {person.number}
+            <button onClick={() => handleDelete(person.id)}>Poista</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default App;
+____________________________________
+personService.js
+
+import axios from 'axios';
+
+const baseUrl = 'http://localhost:3001/persons';
+
+const getAll = () => {
+  return axios.get(baseUrl).then(response => response.data);
+};
+
+const create = (newPerson) => {
+  return axios.post(baseUrl, newPerson).then(response => response.data);
+};
+
+const update = (id, updatedPerson) => {
+  return axios.put(`${baseUrl}/${id}`, updatedPerson).then(response => response.data);
+};
+
+const deletePerson = (id) => {
+  return axios.delete(`${baseUrl}/${id}`);
+};
+
+export default { getAll, create, update, deletePerson };
+________________________________________________________________

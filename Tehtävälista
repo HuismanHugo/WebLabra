@@ -1,0 +1,48 @@
+import React, { useState } from 'react';
+
+function App() {
+  // Tilamuuttuja tehtäville ja funktio sen päivittämiseen
+  const [tasks, setTasks] = useState([]);
+  // Tilamuuttuja uuden tehtävän syöttämiseen
+  const [newTask, setNewTask] = useState('');
+
+  // Lisää uusi tehtävä listaan
+  const addTask = () => {
+    if (newTask.trim() === '') return; // Älä lisää tyhjää tehtävää
+    setTasks([...tasks, newTask]);
+    setNewTask(''); // Tyhjennä syötekenttä
+  };
+
+  // Poista tehtävä listalta
+  const removeTask = (index) => {
+    const updatedTasks = [...tasks];
+    updatedTasks.splice(index, 1);
+    setTasks(updatedTasks);
+  };
+
+  return (
+    <div className="App">
+      <h1>Tehtävälista</h1>
+      <div>
+        <input
+          type="text"
+          placeholder="Lisää uusi tehtävä"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <br></br>
+        <button onClick={addTask}>Lisää</button>
+      </div>
+      <ul>
+        {tasks.map((task, index) => (
+          <li key={index}>
+            {task}
+            <button onClick={() => removeTask(index)}>Poista</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
